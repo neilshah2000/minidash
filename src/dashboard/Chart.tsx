@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, Label, ResponsiveContainer } from 'recha
 import Title from './Title';
 
 // Generate Sales Data
+// test
 function createData(time: string, amount?: number) {
   return { time, amount };
 }
@@ -69,3 +70,4 @@ export default function Chart() {
     </React.Fragment>
   );
 }
+

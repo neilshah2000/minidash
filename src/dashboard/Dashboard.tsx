@@ -22,6 +22,9 @@ import Chart from './Chart';
 import Deposits from './Deposits';
 import Orders from './Orders';
 
+
+import { useStatus } from './../minima/useStatus'
+
 function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -46,10 +49,13 @@ function DashboardContent() {
     setOpen(!open);
   };
 
+  const status = useStatus();
+  console.log(status);
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="absolute">
+      <AppBar>
         <Toolbar>
           <IconButton onClick={toggleDrawer}>
             <MenuIcon />
@@ -64,7 +70,7 @@ function DashboardContent() {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Drawer variant="permanent" open={open}>
+      {/* <Drawer variant="permanent" open={open}>
         <Toolbar>
           <IconButton onClick={toggleDrawer}>
             <ChevronLeftIcon />
@@ -74,7 +80,7 @@ function DashboardContent() {
         <List>{mainListItems}</List>
         <Divider />
         <List>{secondaryListItems}</List>
-      </Drawer>
+      </Drawer> */}
       <Box>
         <Toolbar />
         <Container>
@@ -105,6 +111,4 @@ function DashboardContent() {
   );
 }
 
-export default function Dashboard() {
-  return <DashboardContent />;
-}
+export default DashboardContent;
