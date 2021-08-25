@@ -3,15 +3,17 @@ Minima.init(function(msg){
     if(msg.event == 'connected') {
         Minima.log("Minima server side connected!");
         createTxPOWTable();
+        createStatusTable()
     }
     if(msg.event == 'newtxpow') {
         storeTxPOWEvent(msg.info.txpow);
-
+        
         Minima.cmd('status', function(respJSON) {
             const status = respJSON.response;
             storeStatus(status)
         })
     }
+    
 });
 
 
@@ -28,7 +30,7 @@ function createTxPOWTable() {
 }
 
 function createStatusTable() {
-    const statusSQL = 'CREATE TABLE networkstatus(id INT PRIMARY KEY AUTO_INCREMENT, time VARCHAR(160), ram VARCHAR(160), chainlength INT, chainspeed DECIMAL(3,16), chainweight VARCHAR(160));'
+    const statusSQL = 'CREATE TABLE IF NOT EXISTS networkstatus(id INT PRIMARY KEY AUTO_INCREMENT, time VARCHAR(160), ram VARCHAR(160), chainlength INT, chainspeed DECIMAL(16,3), chainweight VARCHAR(160));'
 
     Minima.sql(statusSQL, function(resp){
         Minima.log(JSON.stringify(resp));
@@ -62,17 +64,26 @@ function storeTxPOWEvent(txpow) {
 function storeStatus(status) {
     Minima.log('Storing status: ' + JSON.stringify(status));
 
-    const INSERT = "INSERT INTO txpowlist (ram, chainlength, chainspeed, chainweight) VALUES ('";
+    const INSERT = "INSERT INTO networkstatus (time, ram, chainlength, chainspeed, chainweight) VALUES (";
+    const TIME = status.time;
     const RAM = status.ram;
     const CHAINLENGTH = status.chainlength;
     const CHAINSPEED = status.chainspeed;
     const CHAINWEIGHT = status.chainweight;
 
+    const SQL = INSERT +
+                '\'' + TIME + '\', ' +
+                '\'' + RAM + '\', ' +
+                CHAINLENGTH + ', ' +
+                CHAINSPEED + ', ' +
+                '\'' + CHAINWEIGHT + '\'' +
+                ')';
+    Minima.log('Status sql: ' + JSON.stringify(SQL));
 
-    Minima.sql(INSERT+JSON.stringify(txpow)+"', '"+txpow.header.block+"', '"+txpow.txpowid+"', '"+isblock+"', '"+txpow.header.timesecs+"', '"+txpow.body.txnlist.length+"')", function(res){
+    Minima.sql(SQL, function(res){
         if(res.status == true) { 
             Minima.log(JSON.stringify(res));
-            Minima.log("TxPoW Added To SQL Table.. ");
+            Minima.log("Status Added To SQL Table.. ");
         }
     });
 }

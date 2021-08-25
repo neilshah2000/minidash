@@ -17,9 +17,9 @@ import MinEventView from './MinEventView'
 import MinEvent from './types/MinEvent'
 import StatusView from './StatusView'
 import Status from './types/Status'
-import { useStatus } from './../minima/useStatus'
-import { Minima } from 'minima';
 
+import { Minima } from 'minima';
+import RamChart from './RamChart'
 
 
 function DashboardContent() {
@@ -27,16 +27,18 @@ function DashboardContent() {
   const toggleDrawer = () => {
     setOpen(!open);
   };
+  const [ramSqlResponse, setRamSqlResponse] = React.useState({})
 
-  const myStatus = useStatus();
-  console.log(myStatus)
-  const status: Status = myStatus.status
-  const initEvent: MinEvent = myStatus.initEvent
+
 
   const onButtonClick = () => {
     console.log('BUTTON CLICKED!!')
     Minima.sql('SELECT * FROM txpowlist;', (res) => {
       console.log(res);
+    })
+    Minima.sql('SELECT * FROM networkstatus;', (res) => {
+      console.log(res);
+      setRamSqlResponse(res);
     })
   }
 
@@ -69,18 +71,26 @@ function DashboardContent() {
             <Grid item xs={12} md={8} lg={9}>
               <Button onClick={onButtonClick} variant="contained" color="primary">Call SQL</Button>
             </Grid>
+
+            <Grid item xs={12} md={4} lg={3}>
+              <Paper>
+                <RamChart ramSqlResponse={ramSqlResponse}></RamChart>
+              </Paper>
+            </Grid>
             
             <Grid item xs={12} md={8} lg={9}>
               <Paper>
-                <MinEventView minEvent={initEvent}></MinEventView>
+                {/* <MinEventView></MinEventView> */}
               </Paper>
             </Grid>
 
             <Grid item xs={12} md={4} lg={3}>
               <Paper>
-                <StatusView status={status}></StatusView>
+                {/* <StatusView></StatusView> */}
               </Paper>
             </Grid>
+
+            
 
           </Grid>
         </Container>
