@@ -1,8 +1,9 @@
 import { minimaInit, initSuccess, minimaGetStatus, statusSuccess, newBlock, newTransaction, newTxPow,
-    newBalance, network, txPowStart, txPowEnd } from "./minima.action";
+    newBalance, network, txPowStart, txPowEnd, minimaStatusHistory, statusHistorySuccess, statusHistoryFailure } from "./minima.action";
 import { Minima, NetworkStatus } from 'minima';
 import { Middleware } from 'redux'
 import { RootState } from './store'
+import { StatusHistory } from './types/StatusHistory'
 
 const enum MinimaEventTypes {
     CONNECTED = 'connected',
@@ -69,8 +70,39 @@ export const minimaGetStatusProcessor: Middleware<{}, RootState> = store => next
     }
 }
 
+export const minimaStatusHistoryProcessor: Middleware<{}, RootState> = store => next => action => {
+    next(action)
+
+    if(minimaStatusHistory.match(action)) {
+        Minima.sql('SELECT * FROM networkstatus;', (res) => {
+            const success = res.response[0].status
+            const statusHistoryData: any = res.response[0].rows
+            console.log(success)
+            if (success) {
+                const sh: StatusHistory[] = statusHistoryData.map((statusHistory: any) => {
+                    console.log(statusHistory)
+                    return new StatusHistory(
+                        statusHistory.CHAINLENGTH,
+                        statusHistory.CHAINSPEED,
+                        statusHistory.CHAINWEIGHT,
+                        statusHistory.ID,
+                        statusHistory.RAM,
+                        statusHistory.TIME)
+                })
+                const statusHistoryAction = statusHistorySuccess(sh)
+                console.log(statusHistoryAction)
+                store.dispatch(statusHistoryAction)
+            } else {
+                const message = res.response[0].message
+                store.dispatch(statusHistoryFailure(message))
+            }
+        })
+    }
+}
+
 
 export const minimaMiddleware = [
     minimaInitProcessor,
-    minimaGetStatusProcessor
+    minimaGetStatusProcessor,
+    minimaStatusHistoryProcessor
 ]

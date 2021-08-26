@@ -1,4 +1,5 @@
-import * as React from 'react';
+import { useState }  from 'react';
+import { useAppDispatch } from './../state/hooks'
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Box from '@material-ui/core/Box';
 import AppBar from '@material-ui/core/AppBar';
@@ -21,13 +22,16 @@ import Status from './types/Status'
 import { Minima } from 'minima';
 import RamChart from './RamChart'
 
+import { minimaStatusHistory } from './../state/minima.action'
+
 
 function DashboardContent() {
-  const [open, setOpen] = React.useState(true);
+  const dispatch = useAppDispatch()
+  const [open, setOpen] = useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  const [ramSqlResponse, setRamSqlResponse] = React.useState({})
+  const [ramSqlResponse, setRamSqlResponse] = useState({})
 
 
 
@@ -40,6 +44,7 @@ function DashboardContent() {
       console.log(res);
       setRamSqlResponse(res);
     })
+    dispatch(minimaStatusHistory())
   }
 
 

@@ -1,14 +1,20 @@
 import { createReducer } from '@reduxjs/toolkit'
-import { initSuccess, initFailure, statusSuccess } from './minima.action'
+import { initSuccess, initFailure, statusSuccess, statusHistorySuccess, statusHistoryFailure } from './minima.action'
 import { NetworkStatus } from 'minima'
+import { StatusHistory } from './types/StatusHistory'
 
 interface Minima {
     connected: boolean,
-    currentStatus: NetworkStatus
+    currentStatus: NetworkStatus | null,
+    statusHistoryErrorMessage: string,
+    statusHistory: StatusHistory[]
 }
 
 const initialState = {
-    connected: false
+    connected: false,
+    currentStatus: null,
+    statusHistoryErrorMessage: '',
+    statusHistory: []
 } as Minima
 
 // uses immer to allow direct state mutation
@@ -22,5 +28,8 @@ export const minimaReducer = createReducer(initialState, (builder) => {
         })
         .addCase(statusSuccess, (state, action) => {
             state.currentStatus = action.payload
+        })
+        .addCase(statusHistorySuccess, (state, action) => {
+            state.statusHistory = action.payload
         })
 })
