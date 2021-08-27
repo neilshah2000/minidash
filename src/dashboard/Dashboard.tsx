@@ -75,7 +75,7 @@ function DashboardContent() {
               <Button onClick={onButtonClick} variant="contained" color="primary">Call SQL</Button>
             </Grid>
 
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid item xs={12} md={12} lg={12}>
               <Paper>
                 <RamChart></RamChart>
               </Paper>

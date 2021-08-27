@@ -30,7 +30,8 @@ const RamChart = () => {
             x: row.time,
             y: row.ram
         })
-        ramDataLabels.push(format(row.time,'MMM dd, HH:MM:SS'))
+        const dStr = format(row.time,'MMM dd, HH:mm:ss')
+        ramDataLabels.push(dStr)
     })
     data.datasets[0].data = ramData
     data.labels = ramDataLabels
