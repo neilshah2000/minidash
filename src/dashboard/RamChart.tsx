@@ -1,46 +1,48 @@
 import react from 'react';
 import { Line } from 'react-chartjs-2';
+import { useAppSelector } from './../state/hooks'
+import { StatusHistory } from '../state/types/StatusHistory';
+import { format } from 'date-fns'
 
 
-const data = {
-    labels: ['1', '2', '3', '4', '5', '6'],
-    datasets: [{
-        label: '# of Votes',
-        data: [12, 19, 3, 5, 2, 3],
-        fill: false,
-        backgroundColor: 'rgb(255, 99, 132)',
-        borderColor: 'rgba(255, 99, 132, 0.2)',
-    }]
-};
 
-const options = {
-    scales: {
-        yAxes: [{
-            ticks: {
-                beginAtZero: true,
-            },
+
+const RamChart = () => {
+    const statusHistory = useAppSelector(state => state.minima.statusHistory)
+
+    // chart.js config
+    const data: any = {
+        labels: [],
+        datasets: [{
+            label: 'RAM',
+            data: [],
+            fill: false,
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgba(255, 99, 132, 0.2)',
         }]
-    },
-};
+    };
 
-const RamChart = ( props: { ramSqlResponse: any }) => {
+    // add our ram data to chart.js config
+    const ramData: any = []
+    const ramDataLabels: any = []
+    statusHistory.forEach((row: StatusHistory) => {
+        ramData.push({
+            x: row.time,
+            y: row.ram
+        })
+        ramDataLabels.push(format(row.time,'MMM dd, HH:MM:SS'))
+    })
+    data.datasets[0].data = ramData
+    data.labels = ramDataLabels
 
-    console.log('ramSqlResponse ', props.ramSqlResponse)
+
 
     return (
         <>
             <div className='header'>
-            <h1 className='title'>Line Chart</h1>
-            <div className='links'>
-                <a
-                className='btn btn-gh'
-                href='https://github.com/reactchartjs/react-chartjs-2/blob/master/example/src/charts/Line.js'
-                >
-                Github Source
-                </a>
+                <h1 className='title'>Status Info - RAM</h1>
             </div>
-            </div>
-            <Line data={data} options={options} />
+            <Line data={data}/>
         </>
     );
 }

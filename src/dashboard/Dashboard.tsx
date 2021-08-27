@@ -31,19 +31,17 @@ function DashboardContent() {
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  const [ramSqlResponse, setRamSqlResponse] = useState({})
-
 
 
   const onButtonClick = () => {
-    console.log('BUTTON CLICKED!!')
-    Minima.sql('SELECT * FROM txpowlist;', (res) => {
-      console.log(res);
-    })
-    Minima.sql('SELECT * FROM networkstatus;', (res) => {
-      console.log(res);
-      setRamSqlResponse(res);
-    })
+    // console.log('BUTTON CLICKED!!')
+    // Minima.sql('SELECT * FROM txpowlist;', (res) => {
+    //   console.log(res);
+    // })
+    // Minima.sql('SELECT * FROM networkstatus;', (res) => {
+    //   console.log(res);
+    //   setRamSqlResponse(res);
+    // })
     dispatch(minimaStatusHistory())
   }
 
@@ -79,7 +77,7 @@ function DashboardContent() {
 
             <Grid item xs={12} md={4} lg={3}>
               <Paper>
-                <RamChart ramSqlResponse={ramSqlResponse}></RamChart>
+                <RamChart></RamChart>
               </Paper>
             </Grid>
             

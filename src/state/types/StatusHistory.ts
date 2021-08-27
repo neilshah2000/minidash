@@ -8,7 +8,7 @@ export class StatusHistory {
     id: number = 0 // "1"
     ram: number = 0 // "72.3 MB"
     ramUnits: string = ''
-    time: Date | null = null // "Thu Aug 26 09:19:57 BST 2021"
+    time: Date | number = 0 // "Thu Aug 26 09:19:57 BST 2021"
 
 
     constructor(chainlength: string = '0', chainspeed: string = '0.0', chainweight: string = '', id: string = '0', ramString: string = '0 MB', time: string = '') {
