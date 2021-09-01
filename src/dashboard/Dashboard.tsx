@@ -20,9 +20,10 @@ import StatusView from './StatusView'
 import Status from './types/Status'
 
 import { Minima } from 'minima';
-import RamChart from './RamChart'
+import RamChart from './RamChart';
+import ChainSpeedChart from './ChainSpeedChart';
+import ChainWeightChart from './ChainWeightChart';
 
-import { minimaStatusHistory } from './../state/minima.action'
 
 
 function DashboardContent() {
@@ -31,19 +32,6 @@ function DashboardContent() {
   const toggleDrawer = () => {
     setOpen(!open);
   };
-
-
-  const onButtonClick = () => {
-    // console.log('BUTTON CLICKED!!')
-    // Minima.sql('SELECT * FROM txpowlist;', (res) => {
-    //   console.log(res);
-    // })
-    // Minima.sql('SELECT * FROM networkstatus;', (res) => {
-    //   console.log(res);
-    //   setRamSqlResponse(res);
-    // })
-    dispatch(minimaStatusHistory())
-  }
 
 
   return (
@@ -71,9 +59,9 @@ function DashboardContent() {
         <Container>
 
           <Grid container spacing={3}>
-            <Grid item xs={12} md={8} lg={9}>
+            {/* <Grid item xs={12} md={8} lg={9}>
               <Button onClick={onButtonClick} variant="contained" color="primary">Call SQL</Button>
-            </Grid>
+            </Grid> */}
 
             <Grid item xs={12} md={12} lg={12}>
               <Paper>
@@ -81,15 +69,15 @@ function DashboardContent() {
               </Paper>
             </Grid>
             
-            <Grid item xs={12} md={8} lg={9}>
+            <Grid item xs={12} md={6} lg={6}>
               <Paper>
-                {/* <MinEventView></MinEventView> */}
+                <ChainSpeedChart></ChainSpeedChart>
               </Paper>
             </Grid>
 
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid item xs={12} md={6} lg={6}>
               <Paper>
-                {/* <StatusView></StatusView> */}
+                <ChainWeightChart></ChainWeightChart>
               </Paper>
             </Grid>
 

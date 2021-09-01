@@ -3,12 +3,13 @@ import { Line } from 'react-chartjs-2';
 import { useAppSelector } from './../state/hooks'
 import { StatusHistory } from '../state/types/StatusHistory';
 import { format } from 'date-fns'
+import { selectRamHistory } from './../state/minima.selector'
 
 
 
 
 const RamChart = () => {
-    const statusHistory = useAppSelector(state => state.minima.statusHistory)
+    const ramHistory = useAppSelector(selectRamHistory)
 
     // chart.js config
     const data: any = {
@@ -23,16 +24,10 @@ const RamChart = () => {
     };
 
     // add our ram data to chart.js config
-    const ramData: any = []
-    const ramDataLabels: any = []
-    statusHistory.forEach((row: StatusHistory) => {
-        ramData.push({
-            x: row.time,
-            y: row.ram
-        })
-        const dStr = format(row.time,'MMM dd, HH:mm:ss')
-        ramDataLabels.push(dStr)
+    const ramData: any = ramHistory.map((row: any) => {
+        return { x: row.x, y: row.y }
     })
+    const ramDataLabels: any = ramHistory.map((row: any) => row.label)
     data.datasets[0].data = ramData
     data.labels = ramDataLabels
 
@@ -41,7 +36,7 @@ const RamChart = () => {
     return (
         <>
             <div className='header'>
-                <h1 className='title'>Status Info - RAM</h1>
+                <h1 className='title'>RAM</h1>
             </div>
             <Line data={data}/>
         </>

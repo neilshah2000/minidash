@@ -13,8 +13,27 @@ Minima.init(function(msg){
             storeStatus(status)
         })
     }
-    
+    showTxns(msg)
 });
+
+
+function showTxns(msg) {
+    if (msg && msg.info && msg.info.txpow) {
+        const txns = msg.info.txpow.body.txnlist
+        const txpowid = msg.info.txpow.txpowid
+        const myDate = msg.info.txpow.header.date
+        if (txns && txns.length > 0) {
+            const txnlistNew = txns.map(txn => {
+                return {
+                    txn: txn,
+                    txpowid: txpowid,
+                    date: myDate
+                }
+            });
+            Minima.log('NEW TXNS: ' + JSON.stringify(txnlistNew))
+        }
+    }
+}
 
 
 function createTxPOWTable() {

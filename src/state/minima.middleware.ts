@@ -1,9 +1,11 @@
 import { minimaInit, initSuccess, minimaGetStatus, statusSuccess, newBlock, newTransaction, newTxPow,
-    newBalance, network, txPowStart, txPowEnd, minimaStatusHistory, statusHistorySuccess, statusHistoryFailure } from "./minima.action";
+    newBalance, network, txPowStart, txPowEnd, minimaStatusHistoryGuard, minimaStatusHistory, statusHistorySuccess,
+    statusHistoryFailure, chainMessage, addTxns, addTxnsSuccess } from "./minima.action";
 import { Minima, NetworkStatus } from 'minima';
 import { Middleware } from 'redux'
 import { RootState } from './store'
 import { StatusHistory } from './types/StatusHistory'
+import { selectStatusCount } from './minima.selector'
 
 const enum MinimaEventTypes {
     CONNECTED = 'connected',
@@ -20,7 +22,6 @@ export const minimaInitProcessor: Middleware<{}, RootState> = store => next => a
     next(action)
 
     if(minimaInit.match(action)) {
-        console.log('Initialize Minima MIDDlEWARE')
         Minima.init((msg) => {
             switch(msg.event) {
                 case MinimaEventTypes.CONNECTED:
@@ -53,6 +54,9 @@ export const minimaInitProcessor: Middleware<{}, RootState> = store => next => a
             
             // get status every time there is an event
             store.dispatch(minimaGetStatus())
+
+            store.dispatch(chainMessage(msg))
+            store.dispatch(addTxns(msg))
         })
     }
 }
@@ -64,9 +68,41 @@ export const minimaGetStatusProcessor: Middleware<{}, RootState> = store => next
     if(minimaGetStatus.match(action)) {
         Minima.cmd('status', (respJSON: any)=> {
             const status: NetworkStatus = respJSON.response;
-            console.log('status', status)
             store.dispatch(statusSuccess(status))
+            store.dispatch(minimaStatusHistoryGuard(5))
         })
+    }
+}
+
+export const minimaAddTxnsProcessor: Middleware<{}, RootState> = store => next => action => {
+    next(action)
+
+    if(addTxns.match(action)) {
+        const txns = action.payload?.info?.txpow?.body?.txnlist
+        const txpowid = action.payload?.info?.txpow?.txpowid
+        const myDate = action.payload?.info?.txpow?.header?.date
+        if (txns && txns.length > 0) {
+            const txnlistNew = txns.map((txn: any)  => {
+                return {
+                    txn,
+                    txpowid,
+                    date: myDate
+                }
+            });
+            store.dispatch(addTxnsSuccess(txnlistNew))
+        }
+
+    }
+}
+
+export const minimaGetStatusGuardProcessor: Middleware<{}, RootState> = store => next => action => {
+    next(action)
+
+    if(minimaStatusHistoryGuard.match(action)) {
+        const statusCount = selectStatusCount(store.getState())
+        if (statusCount % action.payload === 0) {
+            store.dispatch(minimaStatusHistory())
+        }
     }
 }
 
@@ -77,10 +113,8 @@ export const minimaStatusHistoryProcessor: Middleware<{}, RootState> = store => 
         Minima.sql('SELECT * FROM networkstatus;', (res) => {
             const success = res.response[0].status
             const statusHistoryData: any = res.response[0].rows
-            console.log(success)
             if (success) {
                 const sh: StatusHistory[] = statusHistoryData.map((statusHistory: any) => {
-                    console.log(statusHistory)
                     return new StatusHistory(
                         statusHistory.CHAINLENGTH,
                         statusHistory.CHAINSPEED,
@@ -89,9 +123,7 @@ export const minimaStatusHistoryProcessor: Middleware<{}, RootState> = store => 
                         statusHistory.RAM,
                         statusHistory.TIME)
                 })
-                const statusHistoryAction = statusHistorySuccess(sh)
-                console.log(statusHistoryAction)
-                store.dispatch(statusHistoryAction)
+                store.dispatch(statusHistorySuccess(sh))
             } else {
                 const message = res.response[0].message
                 store.dispatch(statusHistoryFailure(message))
@@ -103,6 +135,8 @@ export const minimaStatusHistoryProcessor: Middleware<{}, RootState> = store => 
 
 export const minimaMiddleware = [
     minimaInitProcessor,
+    minimaGetStatusGuardProcessor,
     minimaGetStatusProcessor,
-    minimaStatusHistoryProcessor
+    minimaStatusHistoryProcessor,
+    minimaAddTxnsProcessor
 ]
