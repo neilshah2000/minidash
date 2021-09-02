@@ -23,6 +23,7 @@ import { Minima } from 'minima';
 import RamChart from './RamChart';
 import ChainSpeedChart from './ChainSpeedChart';
 import ChainWeightChart from './ChainWeightChart';
+import DifficultyChart from './DIfficultyChart';
 
 
 
@@ -81,7 +82,11 @@ function DashboardContent() {
               </Paper>
             </Grid>
 
-            
+            <Grid item xs={12} md={12} lg={12}>
+              <Paper>
+                <DifficultyChart></DifficultyChart>
+              </Paper>
+            </Grid>
 
           </Grid>
         </Container>

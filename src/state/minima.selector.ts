@@ -33,6 +33,14 @@ const extractChainWeightPoint = (row: StatusHistory) => {
     }
 }
 
+const extractDifficultyPoint = (row: StatusHistory) => {
+    return {
+        x: row.time,
+        y: row.difficulty,
+        label: format(row.time,'MMM dd, HH:mm:ss')
+    }
+}
+
 const extractRamHistory = (statusHistory: StatusHistory[]) => {
     return statusHistory.map(extractRamPoint)
 }
@@ -45,8 +53,13 @@ const extractChainWeightHistory = (statusHistory: StatusHistory[]) => {
     return statusHistory.map(extractChainWeightPoint)
 }
 
+const extractDifficultyHistory = (statusHistory: StatusHistory[]) => {
+    return statusHistory.map(extractDifficultyPoint)
+}
+
 
 // Memoised with reselect from redux toolkit
 export const selectRamHistory = createSelector(selectStatusHistory, extractRamHistory)
 export const selectChainSpeedHistory = createSelector(selectStatusHistory, extractChainSpeedHistory)
 export const selectChainWeightHistory = createSelector(selectStatusHistory, extractChainWeightHistory)
+export const selectDifficultyHistory = createSelector(selectStatusHistory, extractDifficultyHistory)

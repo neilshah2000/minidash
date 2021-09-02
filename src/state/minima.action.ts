@@ -25,6 +25,11 @@ export const network = createAction('MINIMA_NETWORK');
 export const txPowStart = createAction('TX_POW_START');
 export const txPowEnd = createAction('TX_POW_END');
 
+// front end transaction analysis
 export const chainMessage = createAction<any>('MINIMA_MESSAGE')
 export const addTxns = createAction<any>('MINIMA_ADD_TXNS')
 export const addTxnsSuccess = createAction<any>('MINIMA_ADD_TXNS_SUCCESS')
+
+// back end transaction request
+export const requestTransactions = createAction('MINIMA_REQUEST_TRANSACTIONS')
+export const requestTransactionsSuccess = createAction<any>('MINIMA_REQUEST_TRANSACTIONS_SUCCESS')

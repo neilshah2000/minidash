@@ -1,6 +1,6 @@
 import { minimaInit, initSuccess, minimaGetStatus, statusSuccess, newBlock, newTransaction, newTxPow,
     newBalance, network, txPowStart, txPowEnd, minimaStatusHistoryGuard, minimaStatusHistory, statusHistorySuccess,
-    statusHistoryFailure, chainMessage, addTxns, addTxnsSuccess } from "./minima.action";
+    statusHistoryFailure, chainMessage, addTxns, addTxnsSuccess, requestTransactions, requestTransactionsSuccess } from "./minima.action";
 import { Minima, NetworkStatus } from 'minima';
 import { Middleware } from 'redux'
 import { RootState } from './store'
@@ -90,6 +90,8 @@ export const minimaAddTxnsProcessor: Middleware<{}, RootState> = store => next =
                 }
             });
             store.dispatch(addTxnsSuccess(txnlistNew))
+            // also get the same data from the back end
+            store.dispatch(requestTransactions())
         }
 
     }
@@ -121,7 +123,8 @@ export const minimaStatusHistoryProcessor: Middleware<{}, RootState> = store => 
                         statusHistory.CHAINWEIGHT,
                         statusHistory.ID,
                         statusHistory.RAM,
-                        statusHistory.TIME)
+                        statusHistory.TIME,
+                        statusHistory.DIFFICULTY)
                 })
                 store.dispatch(statusHistorySuccess(sh))
             } else {
@@ -133,10 +136,29 @@ export const minimaStatusHistoryProcessor: Middleware<{}, RootState> = store => 
 }
 
 
+export const minimaRequestTransactionsProcessor: Middleware<{}, RootState> = store => next => action => {
+    next(action)
+
+    if(requestTransactions.match(action)) {
+        Minima.sql('SELECT * FROM transactions;', (res) => {
+            const success = res.response[0].status
+            const transactions: any = res.response[0].rows
+            if (success) {
+ 
+                store.dispatch(requestTransactionsSuccess(transactions))
+            }
+        })
+    }
+}
+
+
+
+
 export const minimaMiddleware = [
     minimaInitProcessor,
     minimaGetStatusGuardProcessor,
     minimaGetStatusProcessor,
     minimaStatusHistoryProcessor,
-    minimaAddTxnsProcessor
+    minimaAddTxnsProcessor,
+    minimaRequestTransactionsProcessor
 ]

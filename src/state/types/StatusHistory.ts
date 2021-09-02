@@ -9,9 +9,10 @@ export class StatusHistory {
     ram: number = 0 // "72.3 MB"
     ramUnits: string = ''
     time: Date | number = 0 // "Thu Aug 26 09:19:57 BST 2021"
+    difficulty: Number = 0
 
 
-    constructor(chainlength: string = '0', chainspeed: string = '0.0', chainweight: string = '', id: string = '0', ramString: string = '0 MB', time: string = '') {
+    constructor(chainlength: string = '0', chainspeed: string = '0.0', chainweight: string = '', id: string = '0', ramString: string = '0 MB', time: string = '', difficulty: string = '0') {
         this.chainlength = parseInt(chainlength)
         this.chainspeed = parseFloat(chainspeed)
         this.chainweight = chainweight
@@ -19,6 +20,7 @@ export class StatusHistory {
         this.ram = parseFloat(ramString.split(/\s+/)[0])
         this.ramUnits = ramString.split(/\s+/)[1]
         this.time = this.createDate(time)
+        this.difficulty = parseInt(difficulty, 16)
     }
 
     private createDate(minimaDateStr: string): Date {
