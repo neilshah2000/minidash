@@ -1,15 +1,11 @@
 import type { RootState } from './store'
-import { StatusHistory } from '../state/types/StatusHistory';
+import { Metric } from './types/Metric';
 import { format } from 'date-fns'
 import { createSelector } from '@reduxjs/toolkit'
 
-const selectStatusHistory = (state: RootState) => state.minima.statusHistory
+const selectMetricHistory = (state: RootState) => state.minima.metricHistory
 
-export const selectStatusCount = (state: RootState) => state.minima.statusCount
-
-export const selectTxnList = (state: RootState) => state.minima.txsn
-
-const extractRamPoint = (row: StatusHistory) => {
+const extractRamPoint = (row: Metric) => {
     return {
         x: row.time,
         y: row.ram,
@@ -17,7 +13,7 @@ const extractRamPoint = (row: StatusHistory) => {
     }
 }
 
-const extractChainSpeedPoint = (row: StatusHistory) => {
+const extractChainSpeedPoint = (row: Metric) => {
     return {
         x: row.time,
         y: row.chainspeed,
@@ -25,7 +21,7 @@ const extractChainSpeedPoint = (row: StatusHistory) => {
     }
 }
 
-const extractChainWeightPoint = (row: StatusHistory) => {
+const extractChainWeightPoint = (row: Metric) => {
     return {
         x: row.time,
         y: row.chainweight,
@@ -33,7 +29,7 @@ const extractChainWeightPoint = (row: StatusHistory) => {
     }
 }
 
-const extractDifficultyPoint = (row: StatusHistory) => {
+const extractDifficultyPoint = (row: Metric) => {
     return {
         x: row.time,
         y: row.difficulty,
@@ -41,25 +37,41 @@ const extractDifficultyPoint = (row: StatusHistory) => {
     }
 }
 
-const extractRamHistory = (statusHistory: StatusHistory[]) => {
-    return statusHistory.map(extractRamPoint)
+const extractTransactionCountPoint = (row: Metric) => {
+    return {
+        data: row.transactionCount,
+        label: row.blockNumber
+    }
 }
 
-const extractChainSpeedHistory = (statusHistory: StatusHistory[]) => {
-    return statusHistory.map(extractChainSpeedPoint)
+const extractRamHistory = (metrics: Metric[]) => {
+    return metrics.map(extractRamPoint)
 }
 
-const extractChainWeightHistory = (statusHistory: StatusHistory[]) => {
-    return statusHistory.map(extractChainWeightPoint)
+const extractChainSpeedHistory = (metrics: Metric[]) => {
+    return metrics.map(extractChainSpeedPoint)
 }
 
-const extractDifficultyHistory = (statusHistory: StatusHistory[]) => {
-    return statusHistory.map(extractDifficultyPoint)
+const extractChainWeightHistory = (metrics: Metric[]) => {
+    return metrics.map(extractChainWeightPoint)
+}
+
+const extractDifficultyHistory = (metrics: Metric[]) => {
+    return metrics.map(extractDifficultyPoint)
+}
+
+const extractTransactionCountHistory = (metrics: Metric[]) => {
+    return metrics.map(extractTransactionCountPoint)
 }
 
 
 // Memoised with reselect from redux toolkit
-export const selectRamHistory = createSelector(selectStatusHistory, extractRamHistory)
-export const selectChainSpeedHistory = createSelector(selectStatusHistory, extractChainSpeedHistory)
-export const selectChainWeightHistory = createSelector(selectStatusHistory, extractChainWeightHistory)
-export const selectDifficultyHistory = createSelector(selectStatusHistory, extractDifficultyHistory)
+export const selectRamHistory = createSelector(selectMetricHistory, extractRamHistory)
+export const selectChainSpeedHistory = createSelector(selectMetricHistory, extractChainSpeedHistory)
+export const selectChainWeightHistory = createSelector(selectMetricHistory, extractChainWeightHistory)
+export const selectDifficultyHistory = createSelector(selectMetricHistory, extractDifficultyHistory)
+export const selectTransactionCountHistory  = createSelector(selectMetricHistory, extractTransactionCountHistory)
+
+export const selectLastTenBlocks = (state: RootState) => {
+    return state.minima.latestBlocks.slice(-10)
+}

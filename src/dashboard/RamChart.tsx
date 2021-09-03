@@ -1,8 +1,6 @@
 import react from 'react';
 import { Line } from 'react-chartjs-2';
 import { useAppSelector } from './../state/hooks'
-import { StatusHistory } from '../state/types/StatusHistory';
-import { format } from 'date-fns'
 import { selectRamHistory } from './../state/minima.selector'
 
 

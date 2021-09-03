@@ -1,26 +1,26 @@
 import { createReducer } from '@reduxjs/toolkit'
-import { initSuccess, initFailure, statusSuccess, statusHistorySuccess, statusHistoryFailure, chainMessage, addTxnsSuccess } from './minima.action'
+import { initSuccess, initFailure, statusSuccess, minimaGetMetricsSuccess, chainMessage, newBlock} from './minima.action'
 import { NetworkStatus } from 'minima'
-import { StatusHistory } from './types/StatusHistory'
+import { Metric } from './types/Metric'
 
 interface Minima {
     connected: boolean,
     currentStatus: NetworkStatus | null,
-    statusCount: Number,
-    statusHistoryErrorMessage: string,
-    statusHistory: StatusHistory[],
+    metricErrorMessage: string,
+    metricHistory: Metric[],
     latestMessage: any,
-    txsn: any[]
+    latestBlocks: any[],
+    latestTransactions: any[]
 }
 
 const initialState = {
     connected: false,
     currentStatus: null,
-    statusCount: 0,
-    statusHistoryErrorMessage: '',
-    statusHistory: [],
+    metricErrorMessage: '',
+    metricHistory: [],
     latestMessage: {},
-    txsn: []
+    latestBlocks: [],
+    latestTransactions: []
 } as Minima
 
 // uses immer to allow direct state mutation
@@ -34,15 +34,17 @@ export const minimaReducer = createReducer(initialState, (builder) => {
         })
         .addCase(statusSuccess, (state, action) => {
             state.currentStatus = action.payload;
-            state.statusCount = state.statusCount.valueOf() + 1
         })
-        .addCase(statusHistorySuccess, (state, action) => {
-            state.statusHistory = action.payload
+        .addCase(minimaGetMetricsSuccess, (state, action) => {
+            state.metricHistory = action.payload
         })
         .addCase(chainMessage, (state, action) => {
             state.latestMessage = action.payload
         })
-        .addCase(addTxnsSuccess, (state, action) => {
-            state.txsn = state.txsn.concat(action.payload)
+        .addCase(newBlock, (state, action) => {
+            state.latestBlocks.push(action.payload.txpow)
+            if (state.latestBlocks.length > 100) {
+                state.latestBlocks.shift()
+            }
         })
 })

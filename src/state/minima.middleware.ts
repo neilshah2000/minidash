@@ -1,11 +1,11 @@
 import { minimaInit, initSuccess, minimaGetStatus, statusSuccess, newBlock, newTransaction, newTxPow,
-    newBalance, network, txPowStart, txPowEnd, minimaStatusHistoryGuard, minimaStatusHistory, statusHistorySuccess,
-    statusHistoryFailure, chainMessage, addTxns, addTxnsSuccess, requestTransactions, requestTransactionsSuccess } from "./minima.action";
+    newBalance, network, txPowStart, txPowEnd, minimaGetMetrics, minimaGetMetricsSuccess,
+    minimaGetMetricsFailure, chainMessage } from "./minima.action";
 import { Minima, NetworkStatus } from 'minima';
 import { Middleware } from 'redux'
 import { RootState } from './store'
-import { StatusHistory } from './types/StatusHistory'
-import { selectStatusCount } from './minima.selector'
+import { Metric } from './types/Metric'
+import { info } from "console";
 
 const enum MinimaEventTypes {
     CONNECTED = 'connected',
@@ -16,7 +16,7 @@ const enum MinimaEventTypes {
     NETWORK = 'network',
     TXPOWSTART = 'txpowstart',
     TXPOWEND = 'txpowend'
-  }
+}
 
 export const minimaInitProcessor: Middleware<{}, RootState> = store => next => action => {
     next(action)
@@ -25,140 +25,96 @@ export const minimaInitProcessor: Middleware<{}, RootState> = store => next => a
         Minima.init((msg) => {
             switch(msg.event) {
                 case MinimaEventTypes.CONNECTED:
-                    store.dispatch(initSuccess())
+                    store.dispatch(initSuccess(msg.info))
                     break;
                 case MinimaEventTypes.NEWBLOCK:
-                    store.dispatch(newBlock())
+                    store.dispatch(newBlock(msg.info))
                     break;
                 case MinimaEventTypes.NEWTRANSACTION:
-                    store.dispatch(newTransaction())
+                    store.dispatch(newTransaction(msg.info))
                     break;
                 case MinimaEventTypes.NEWTXPOW:
-                    store.dispatch(newTxPow())
+                    store.dispatch(newTxPow(msg.info))
                     break;
                 case MinimaEventTypes.NEWBALANCE:
-                    store.dispatch(newBalance())
+                    store.dispatch(newBalance(msg.info))
                     break;
                 case MinimaEventTypes.NETWORK:
-                    store.dispatch(network())
+                    store.dispatch(network(msg.info))
                     break;
                 case MinimaEventTypes.TXPOWSTART:
-                    store.dispatch(txPowStart())
+                    store.dispatch(txPowStart(msg.info))
                     break;
                 case MinimaEventTypes.TXPOWEND:
-                    store.dispatch(txPowEnd())
+                    store.dispatch(txPowEnd(msg.info))
                     break;
                 default:
                     console.error('Unknown event type: ', msg.event)
             }
             
-            // get status every time there is an event
-            store.dispatch(minimaGetStatus())
-
             store.dispatch(chainMessage(msg))
-            store.dispatch(addTxns(msg))
         })
     }
 }
 
+// this middleware will trigger new actions,
+// but there is also a reducer for this same action
+// which will store the block data
+const newBlockEventProcessor: Middleware<{}, RootState> = store => next => action => {
+    next(action)
 
-export const minimaGetStatusProcessor: Middleware<{}, RootState> = store => next => action => {
+    if(newBlock.match(action)) {
+        store.dispatch(minimaGetMetrics())
+        store.dispatch(minimaGetStatus())
+    }
+}
+
+const minimaGetStatusProcessor: Middleware<{}, RootState> = store => next => action => {
     next(action)
 
     if(minimaGetStatus.match(action)) {
         Minima.cmd('status', (respJSON: any)=> {
             const status: NetworkStatus = respJSON.response;
             store.dispatch(statusSuccess(status))
-            store.dispatch(minimaStatusHistoryGuard(5))
         })
     }
 }
 
-export const minimaAddTxnsProcessor: Middleware<{}, RootState> = store => next => action => {
+
+const minimaGetMetricsProcessor: Middleware<{}, RootState> = store => next => action => {
     next(action)
 
-    if(addTxns.match(action)) {
-        const txns = action.payload?.info?.txpow?.body?.txnlist
-        const txpowid = action.payload?.info?.txpow?.txpowid
-        const myDate = action.payload?.info?.txpow?.header?.date
-        if (txns && txns.length > 0) {
-            const txnlistNew = txns.map((txn: any)  => {
-                return {
-                    txn,
-                    txpowid,
-                    date: myDate
-                }
-            });
-            store.dispatch(addTxnsSuccess(txnlistNew))
-            // also get the same data from the back end
-            store.dispatch(requestTransactions())
-        }
-
-    }
-}
-
-export const minimaGetStatusGuardProcessor: Middleware<{}, RootState> = store => next => action => {
-    next(action)
-
-    if(minimaStatusHistoryGuard.match(action)) {
-        const statusCount = selectStatusCount(store.getState())
-        if (statusCount % action.payload === 0) {
-            store.dispatch(minimaStatusHistory())
-        }
-    }
-}
-
-export const minimaStatusHistoryProcessor: Middleware<{}, RootState> = store => next => action => {
-    next(action)
-
-    if(minimaStatusHistory.match(action)) {
-        Minima.sql('SELECT * FROM networkstatus;', (res) => {
+    if(minimaGetMetrics.match(action)) {
+        Minima.sql('SELECT * FROM metrics;', (res) => {
             const success = res.response[0].status
             const statusHistoryData: any = res.response[0].rows
             if (success) {
-                const sh: StatusHistory[] = statusHistoryData.map((statusHistory: any) => {
-                    return new StatusHistory(
-                        statusHistory.CHAINLENGTH,
-                        statusHistory.CHAINSPEED,
-                        statusHistory.CHAINWEIGHT,
-                        statusHistory.ID,
-                        statusHistory.RAM,
-                        statusHistory.TIME,
-                        statusHistory.DIFFICULTY)
+                const sh: Metric[] = statusHistoryData.map((metric: any) => {
+                    return new Metric(
+                        metric.CHAINLENGTH,
+                        metric.CHAINSPEED,
+                        metric.CHAINWEIGHT,
+                        metric.ID,
+                        metric.RAM,
+                        metric.TIME,
+                        metric.DIFFICULTY,
+                        metric.BLOCKNUMBER,
+                        metric.TRANSACTIONCOUNT)
                 })
-                store.dispatch(statusHistorySuccess(sh))
+                store.dispatch(minimaGetMetricsSuccess(sh))
             } else {
                 const message = res.response[0].message
-                store.dispatch(statusHistoryFailure(message))
+                store.dispatch(minimaGetMetricsFailure(message))
             }
         })
     }
 }
-
-
-export const minimaRequestTransactionsProcessor: Middleware<{}, RootState> = store => next => action => {
-    next(action)
-
-    if(requestTransactions.match(action)) {
-        Minima.sql('SELECT * FROM transactions;', (res) => {
-            const success = res.response[0].status
-            const transactions: any = res.response[0].rows
-            if (success) {
- 
-                store.dispatch(requestTransactionsSuccess(transactions))
-            }
-        })
-    }
-}
-
 
 
 
 export const minimaMiddleware = [
     minimaInitProcessor,
-    minimaGetStatusGuardProcessor,
+    newBlockEventProcessor,
     minimaGetStatusProcessor,
-    minimaStatusHistoryProcessor,
-    minimaAddTxnsProcessor,
-    minimaRequestTransactionsProcessor
+    minimaGetMetricsProcessor,
 ]
