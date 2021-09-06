@@ -10,7 +10,7 @@ interface Minima {
     metricHistory: Metric[],
     latestMessage: any,
     latestBlocks: any[],
-    latestTransactions: any[]
+    latestTransactions: Array<any>
 }
 
 const initialState = {
@@ -42,9 +42,16 @@ export const minimaReducer = createReducer(initialState, (builder) => {
             state.latestMessage = action.payload
         })
         .addCase(newBlock, (state, action) => {
+            // add latest block for ui
             state.latestBlocks.push(action.payload.txpow)
             if (state.latestBlocks.length > 100) {
                 state.latestBlocks.shift()
+            }
+
+            // add latest transaction for ui
+            state.latestTransactions = state.latestTransactions.concat(action.payload.txpow.body.txnlist)
+            if (state.latestTransactions.length > 100) {
+                state.latestTransactions.shift()
             }
         })
 })

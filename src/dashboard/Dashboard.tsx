@@ -27,6 +27,7 @@ import DifficultyChart from './DIfficultyChart';
 import TransactionCountHistoryChart from './TransactionCountHistoryChart'
 import LatestBlocks from './LatestBlocks';
 import LatestTransactions from './LatestTransactions';
+import CurrentChainData from './CurrentChainData'
 
 
 
@@ -63,6 +64,13 @@ function DashboardContent() {
         <Container>
 
           <Grid container spacing={3}>
+
+            <Grid item xs={12} md={12} lg={12}>
+              <Paper>
+                <CurrentChainData></CurrentChainData>
+              </Paper>
+            </Grid>
+
             <Grid item xs={12} md={6} lg={6}>
               <Paper>
                 <LatestBlocks></LatestBlocks>

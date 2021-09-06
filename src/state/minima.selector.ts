@@ -75,3 +75,11 @@ export const selectTransactionCountHistory  = createSelector(selectMetricHistory
 export const selectLastTenBlocks = (state: RootState) => {
     return state.minima.latestBlocks.slice(-10)
 }
+
+export const selectLastTenTransactions = (state: RootState) => {
+    return state.minima.latestTransactions.slice(-10)
+}
+
+export const selectStatus = (state: RootState) => {
+    return state.minima.currentStatus
+}

@@ -6,11 +6,21 @@ import ListItemText from '@material-ui/core/ListItemText';
 import InboxIcon from '@material-ui/icons/Inbox';
 import { useAppSelector } from '../state/hooks'
 import { selectDifficultyHistory } from '../state/minima.selector'
+import TransactionListItem from './TransactionListItem'
+import { selectLastTenTransactions } from './../state/minima.selector'
 
 
 
 const LatestTransactions = () => {
+    const myLatestTransactions = useAppSelector(selectLastTenTransactions)
 
+    const transactionItems = myLatestTransactions.map((transaction: any, i: number) => <TransactionListItem name={transaction} key={i}></TransactionListItem>)
+
+    // pad block list
+    const padBlockCount = 10 - transactionItems.length
+    for(let i=0; i<padBlockCount; i++) {
+        transactionItems.push(<TransactionListItem name='..waiting for transaction' key={i+10}></TransactionListItem>)
+    }
 
 
 
@@ -20,12 +30,7 @@ const LatestTransactions = () => {
                 <h1 className='title'>Latest Transactions</h1>
             </div>
             <List>
-                <ListItem button>
-                    <ListItemIcon>
-                        <InboxIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Inbox" />
-                </ListItem>
+                {transactionItems}
             </List>
         </>
     );
